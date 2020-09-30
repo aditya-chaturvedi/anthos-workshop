@@ -1,0 +1,24 @@
+apiVersion: iam.cnrm.cloud.google.com/v1beta1
+kind: IAMPolicy
+metadata:
+  name: app-workload-identity
+  namespace: cnrm-system
+spec:
+  resourceRef:
+    apiVersion: iam.cnrm.cloud.google.com/v1beta1
+    kind: IAMServiceAccount
+    name: microservices
+  bindings:
+    - role: roles/iam.workloadIdentityUser
+      members:
+        - serviceAccount:user014-200413-11-ops-7zzocc.svc.id.goog[ad/ad]
+        - serviceAccount:user014-200413-11-ops-7zzocc.svc.id.goog[cart/cart]
+        - serviceAccount:user014-200413-11-ops-7zzocc.svc.id.goog[checkout/checkout]
+        - serviceAccount:user014-200413-11-ops-7zzocc.svc.id.goog[currency/currency]
+        - serviceAccount:user014-200413-11-ops-7zzocc.svc.id.goog[email/email]
+        - serviceAccount:user014-200413-11-ops-7zzocc.svc.id.goog[frontend/frontend]
+        - serviceAccount:user014-200413-11-ops-7zzocc.svc.id.goog[loadgenerator/loadgenerator]
+        - serviceAccount:user014-200413-11-ops-7zzocc.svc.id.goog[payment/payment]
+        - serviceAccount:user014-200413-11-ops-7zzocc.svc.id.goog[product-catalog/product-catalog]
+        - serviceAccount:user014-200413-11-ops-7zzocc.svc.id.goog[recommendation/recommendation]
+        - serviceAccount:user014-200413-11-ops-7zzocc.svc.id.goog[shipping/shipping]

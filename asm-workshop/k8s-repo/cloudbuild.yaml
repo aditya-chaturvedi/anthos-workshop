@@ -1,0 +1,109 @@
+steps:
+  # This step ensures the CRDs are installed before the manifests and CRs are created.
+  - name: gcr.io/cloud-builders/gke-deploy
+    id: Install-crds
+    entrypoint: bash
+    args:
+      - -exc
+      - |
+        /gke-deploy apply --project=user014-200413-11-ops-7zzocc --cluster=gke-asm-1-r1-prod --location=us-west1 --filename=./gke-asm-1-r1-prod/istio-operator/crds/istio_v1alpha2_istiocontrolplane_crd.yaml
+        /gke-deploy apply --project=user014-200413-11-ops-7zzocc --cluster=gke-asm-2-r2-prod --location=us-central1 --filename=./gke-asm-2-r2-prod/istio-operator/crds/istio_v1alpha2_istiocontrolplane_crd.yaml
+        /gke-deploy apply --project=user014-200413-11-dev1-7zzocc --cluster=gke-1-apps-r1a-prod --location=us-west1-a --filename=./gke-1-apps-r1a-prod/istio-operator/crds/istio_v1alpha2_istiocontrolplane_crd.yaml
+        /gke-deploy apply --project=user014-200413-11-dev1-7zzocc --cluster=gke-2-apps-r1b-prod --location=us-west1-b --filename=./gke-2-apps-r1b-prod/istio-operator/crds/istio_v1alpha2_istiocontrolplane_crd.yaml
+        /gke-deploy apply --project=user014-200413-11-dev2-7zzocc --cluster=gke-3-apps-r2a-prod --location=us-central1-a --filename=./gke-3-apps-r2a-prod/istio-operator/crds/istio_v1alpha2_istiocontrolplane_crd.yaml
+        /gke-deploy apply --project=user014-200413-11-dev2-7zzocc --cluster=gke-4-apps-r2b-prod --location=us-central1-b --filename=./gke-4-apps-r2b-prod/istio-operator/crds/istio_v1alpha2_istiocontrolplane_crd.yaml
+
+  # This step deploys the manifests to the gke-asm-1-r1-prod cluster
+  - name: gcr.io/cloud-builders/kubectl
+    id: Deploy-ops-asm-1
+    args:
+      - apply
+      - -k
+      - ./gke-asm-1-r1-prod
+    env:
+      - CLOUDSDK_CORE_PROJECT=user014-200413-11-ops-7zzocc
+      - CLOUDSDK_COMPUTE_REGION=us-west1
+      - CLOUDSDK_CONTAINER_CLUSTER=gke-asm-1-r1-prod
+
+  # This step deploys the manifests to the gke-asm-2-r2-prod cluster
+  - name: gcr.io/cloud-builders/kubectl
+    id: Deploy-ops-asm-2
+    args:
+      - apply
+      - -k
+      - ./gke-asm-2-r2-prod
+    env:
+      - CLOUDSDK_CORE_PROJECT=user014-200413-11-ops-7zzocc
+      - CLOUDSDK_COMPUTE_REGION=us-central1
+      - CLOUDSDK_CONTAINER_CLUSTER=gke-asm-2-r2-prod
+
+  # This step deploys the manifests to the gke-1-apps-r1a-prod cluster
+  - name: gcr.io/cloud-builders/kubectl
+    id: Deploy-gke-1-apps-r1a-prod
+    args:
+      - apply
+      - -k
+      - ./gke-1-apps-r1a-prod
+    env:
+      - CLOUDSDK_CORE_PROJECT=user014-200413-11-dev1-7zzocc
+      - CLOUDSDK_COMPUTE_REGION=us-west1-a
+      - CLOUDSDK_CONTAINER_CLUSTER=gke-1-apps-r1a-prod
+
+  # This step deploys the manifests to the gke-2-apps-r1b-prod cluster
+  - name: gcr.io/cloud-builders/kubectl
+    id: Deploy-gke-2-apps-r1b-prod
+    args:
+      - apply
+      - -k
+      - ./gke-2-apps-r1b-prod
+    env:
+      - CLOUDSDK_CORE_PROJECT=user014-200413-11-dev1-7zzocc
+      - CLOUDSDK_COMPUTE_REGION=us-west1-b
+      - CLOUDSDK_CONTAINER_CLUSTER=gke-2-apps-r1b-prod
+
+  # This step deploys the manifests to the gke-3-apps-r2a-prod cluster
+  - name: gcr.io/cloud-builders/kubectl
+    id: Deploy-gke-3-apps-r2a-prod
+    args:
+      - apply
+      - -k
+      - ./gke-3-apps-r2a-prod
+    env:
+      - CLOUDSDK_CORE_PROJECT=user014-200413-11-dev2-7zzocc
+      - CLOUDSDK_COMPUTE_REGION=us-central1-a
+      - CLOUDSDK_CONTAINER_CLUSTER=gke-3-apps-r2a-prod
+
+  # This step deploys the manifests to the gke-4-apps-r2b-prod cluster
+  - name: gcr.io/cloud-builders/kubectl
+    id: Deploy-gke-4-apps-r2b-prod
+    args:
+      - apply
+      - -k
+      - ./gke-4-apps-r2b-prod
+    env:
+      - CLOUDSDK_CORE_PROJECT=user014-200413-11-dev2-7zzocc
+      - CLOUDSDK_COMPUTE_REGION=us-central1-b
+      - CLOUDSDK_CONTAINER_CLUSTER=gke-4-apps-r2b-prod
+
+  # This step builds the multi-cluster config secrets for the clusters
+  - name: gcr.io/google.com/cloudsdktool/cloud-sdk:alpine
+    id: build-multi-cluster-config-secrets
+    entrypoint: /workspace/make_multi_cluster_config.sh
+    env:
+      - KUBECONFIG=/workspace/kubemesh
+      - OPS_PROJECT_ID=user014-200413-11-ops-7zzocc
+      - OPS_GKE_1_CLUSTER=gke-asm-1-r1-prod
+      - OPS_GKE_1_LOCATION=us-west1
+      - OPS_GKE_2_CLUSTER=gke-asm-2-r2-prod
+      - OPS_GKE_2_LOCATION=us-central1
+      - DEV1_PROJECT_ID=user014-200413-11-dev1-7zzocc
+      - DEV1_GKE_1_CLUSTER=gke-1-apps-r1a-prod
+      - DEV1_GKE_1_LOCATION=us-west1-a
+      - DEV1_GKE_2_CLUSTER=gke-2-apps-r1b-prod
+      - DEV1_GKE_2_LOCATION=us-west1-b
+      - DEV2_PROJECT_ID=user014-200413-11-dev2-7zzocc
+      - DEV2_GKE_1_CLUSTER=gke-3-apps-r2a-prod
+      - DEV2_GKE_1_LOCATION=us-central1-a
+      - DEV2_GKE_2_CLUSTER=gke-4-apps-r2b-prod
+      - DEV2_GKE_2_LOCATION=us-central1-b
+

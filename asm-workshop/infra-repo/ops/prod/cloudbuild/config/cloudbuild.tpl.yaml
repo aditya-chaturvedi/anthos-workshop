@@ -1,0 +1,152 @@
+steps:
+  # This step ensures the CRDs are installed before the manifests and CRs are created.
+  - name: "gcr.io/cloud-builders/gke-deploy"
+    id: "Install-crds"
+    entrypoint: "bash"
+    args:
+      - "-exc"
+      - |
+        /gke-deploy apply --project=${ops_project_id} --cluster=${ops_gke_1_name} --location=${ops_gke_1_location} --filename=./gke-asm-1-r1-prod/${crd_path}
+        /gke-deploy apply --project=${ops_project_id} --cluster=${ops_gke_2_name} --location=${ops_gke_2_location} --filename=./gke-asm-2-r2-prod/${crd_path}
+        /gke-deploy apply --project=${ops_project_id} --cluster=${ops_gke_3_name} --location=${ops_gke_3_location} --filename=./gke-asm-3-r3-prod/${crd_path}
+        /gke-deploy apply --project=${dev1_project_id} --cluster=${dev1_gke_1_name} --location=${dev1_gke_1_location} --filename=./gke-1-apps-r1a-prod/${crd_path}
+        /gke-deploy apply --project=${dev1_project_id} --cluster=${dev1_gke_2_name} --location=${dev1_gke_2_location} --filename=./gke-2-apps-r1b-prod/${crd_path}
+        /gke-deploy apply --project=${dev2_project_id} --cluster=${dev2_gke_3_name} --location=${dev2_gke_3_location} --filename=./gke-3-apps-r2a-prod/${crd_path}
+        /gke-deploy apply --project=${dev2_project_id} --cluster=${dev2_gke_4_name} --location=${dev2_gke_4_location} --filename=./gke-4-apps-r2b-prod/${crd_path}
+        /gke-deploy apply --project=${dev3_project_id} --cluster=${dev3_gke_5_name} --location=${dev3_gke_5_location} --filename=./gke-5-apps-r3b-prod/${crd_path}
+        /gke-deploy apply --project=${dev3_project_id} --cluster=${dev3_gke_6_name} --location=${dev3_gke_6_location} --filename=./gke-6-apps-r3c-prod/${crd_path}
+
+  # This step deploys the manifests to the gke-asm-1-r1-prod cluster
+  - name: "gcr.io/cloud-builders/kubectl"
+    id: Deploy-ops-asm-1
+    args:
+      - "apply"
+      - "-k"
+      - "./gke-asm-1-r1-prod"
+    env:
+      - "CLOUDSDK_CORE_PROJECT=${ops_project_id}"
+      - "CLOUDSDK_COMPUTE_REGION=${ops_gke_1_location}"
+      - "CLOUDSDK_CONTAINER_CLUSTER=${ops_gke_1_name}"
+
+  # This step deploys the manifests to the gke-asm-2-r2-prod cluster
+  - name: "gcr.io/cloud-builders/kubectl"
+    id: Deploy-ops-asm-2
+    args:
+      - "apply"
+      - "-k"
+      - "./gke-asm-2-r2-prod"
+    env:
+      - "CLOUDSDK_CORE_PROJECT=${ops_project_id}"
+      - "CLOUDSDK_COMPUTE_REGION=${ops_gke_2_location}"
+      - "CLOUDSDK_CONTAINER_CLUSTER=${ops_gke_2_name}"
+
+  # This step deploys the manifests to the gke-asm-3-r3-prod cluster
+  - name: "gcr.io/cloud-builders/kubectl"
+    id: Deploy-ops-asm-3
+    args:
+      - "apply"
+      - "-k"
+      - "./gke-asm-3-r3-prod"
+    env:
+      - "CLOUDSDK_CORE_PROJECT=${ops_project_id}"
+      - "CLOUDSDK_COMPUTE_REGION=${ops_gke_3_location}"
+      - "CLOUDSDK_CONTAINER_CLUSTER=${ops_gke_3_name}"
+
+# This step deploys the manifests to the gke-1-apps-r1a-prod cluster
+  - name: "gcr.io/cloud-builders/kubectl"
+    id: Deploy-gke-1-apps-r1a-prod
+    args:
+      - "apply"
+      - "-k"
+      - "./gke-1-apps-r1a-prod"
+    env:
+      - "CLOUDSDK_CORE_PROJECT=${dev1_project_id}"
+      - "CLOUDSDK_COMPUTE_REGION=${dev1_gke_1_location}"
+      - "CLOUDSDK_CONTAINER_CLUSTER=${dev1_gke_1_name}"
+
+  # This step deploys the manifests to the gke-2-apps-r1b-prod cluster
+  - name: "gcr.io/cloud-builders/kubectl"
+    id: Deploy-gke-2-apps-r1b-prod
+    args:
+      - "apply"
+      - "-k"
+      - "./gke-2-apps-r1b-prod"
+    env:
+      - "CLOUDSDK_CORE_PROJECT=${dev1_project_id}"
+      - "CLOUDSDK_COMPUTE_REGION=${dev1_gke_2_location}"
+      - "CLOUDSDK_CONTAINER_CLUSTER=${dev1_gke_2_name}"
+
+  # This step deploys the manifests to the gke-3-apps-r2a-prod cluster
+  - name: "gcr.io/cloud-builders/kubectl"
+    id: Deploy-gke-3-apps-r2a-prod
+    args:
+      - "apply"
+      - "-k"
+      - "./gke-3-apps-r2a-prod"
+    env:
+      - "CLOUDSDK_CORE_PROJECT=${dev2_project_id}"
+      - "CLOUDSDK_COMPUTE_REGION=${dev2_gke_3_location}"
+      - "CLOUDSDK_CONTAINER_CLUSTER=${dev2_gke_3_name}"
+
+  # This step deploys the manifests to the gke-4-apps-r2b-prod cluster
+  - name: "gcr.io/cloud-builders/kubectl"
+    id: Deploy-gke-4-apps-r2b-prod
+    args:
+      - "apply"
+      - "-k"
+      - "./gke-4-apps-r2b-prod"
+    env:
+      - "CLOUDSDK_CORE_PROJECT=${dev2_project_id}"
+      - "CLOUDSDK_COMPUTE_REGION=${dev2_gke_4_location}"
+      - "CLOUDSDK_CONTAINER_CLUSTER=${dev2_gke_4_name}"
+  # This step deploys the manifests to the gke-4-apps-r2b-prod cluster
+  - name: "gcr.io/cloud-builders/kubectl"
+    id: Deploy-gke-5-apps-r3b-prod
+    args:
+      - "apply"
+      - "-k"
+      - "./gke-5-apps-r3b-prod"
+    env:
+      - "CLOUDSDK_CORE_PROJECT=${dev3_project_id}"
+      - "CLOUDSDK_COMPUTE_REGION=${dev3_gke_5_location}"
+      - "CLOUDSDK_CONTAINER_CLUSTER=${dev3_gke_5_name}"
+  # This step deploys the manifests to the gke-4-apps-r2b-prod cluster
+  - name: "gcr.io/cloud-builders/kubectl"
+    id: Deploy-gke-6-apps-r3c-prod
+    args:
+      - "apply"
+      - "-k"
+      - "./gke-6-apps-r3c-prod"
+    env:
+      - "CLOUDSDK_CORE_PROJECT=${dev3_project_id}"
+      - "CLOUDSDK_COMPUTE_REGION=${dev3_gke_6_location}"
+      - "CLOUDSDK_CONTAINER_CLUSTER=${dev3_gke_6_name}"
+
+  # This step builds the multi-cluster config secrets for the clusters
+  - name: "gcr.io/google.com/cloudsdktool/cloud-sdk:alpine"
+    id: build-multi-cluster-config-secrets
+    entrypoint: "/workspace/make_multi_cluster_config.sh"
+    env:
+      - "KUBECONFIG=/workspace/kubemesh"
+      - "OPS_PROJECT_ID=${ops_project_id}"
+      - "OPS_GKE_1_CLUSTER=${ops_gke_1_name}"
+      - "OPS_GKE_1_LOCATION=${ops_gke_1_location}"
+      - "OPS_GKE_2_CLUSTER=${ops_gke_2_name}"
+      - "OPS_GKE_2_LOCATION=${ops_gke_2_location}"
+      - "OPS_GKE_3_CLUSTER=${ops_gke_3_name}"
+      - "OPS_GKE_3_LOCATION=${ops_gke_3_location}"
+      - "DEV1_PROJECT_ID=${dev1_project_id}"
+      - "DEV1_GKE_1_CLUSTER=${dev1_gke_1_name}"
+      - "DEV1_GKE_1_LOCATION=${dev1_gke_1_location}"
+      - "DEV1_GKE_2_CLUSTER=${dev1_gke_2_name}"
+      - "DEV1_GKE_2_LOCATION=${dev1_gke_2_location}"
+      - "DEV2_PROJECT_ID=${dev2_project_id}"
+      - "DEV2_GKE_1_CLUSTER=${dev2_gke_3_name}"
+      - "DEV2_GKE_1_LOCATION=${dev2_gke_3_location}"
+      - "DEV2_GKE_2_CLUSTER=${dev2_gke_4_name}"
+      - "DEV2_GKE_2_LOCATION=${dev2_gke_4_location}"
+      - "DEV3_PROJECT_ID=${dev3_project_id}"
+      - "DEV3_GKE_1_CLUSTER=${dev3_gke_5_name}"
+      - "DEV3_GKE_1_LOCATION=${dev3_gke_5_location}"
+      - "DEV3_GKE_2_CLUSTER=${dev3_gke_6_name}"
+      - "DEV3_GKE_2_LOCATION=${dev3_gke_6_location}"
